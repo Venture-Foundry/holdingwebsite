@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vCard Admin — Venture Foundry</title>
+<link rel="icon" type="image/png" href="img/mark_only.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14181D; --ink-2:#1F262E; --ink-3:#262E37;
+  --slate-soft:#6B7682; --steel:#97A1AB;
+  --paper:#F7F4EE; --paper-2:#EFE8DA; --paper-3:#E4DCC9;
+  --ember:#C2551B; --ember-2:#E2752E; --ember-3:#F4954A; --ember-deep:#8E3A12;
+  --line-on-dark:rgba(247,244,238,0.10);
+  --line-on-paper:rgba(27,33,40,0.10);
+  --line-on-paper-strong:rgba(27,33,40,0.16);
+  --f-display:'Fraunces','Iowan Old Style',serif;
+  --f-body:'Inter',-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',monospace;
+  --ease:cubic-bezier(.22,.68,0,1);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:#1B2128;
+  font-family:var(--f-body);
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+a{color:inherit;text-decoration:none;}
+h1,h2,h3,h4,p{margin:0;}
+
+/* ---- Auth screen ---- */
+#auth-screen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:var(--ink); flex-direction:column; gap:24px; padding:32px;
+}
+#auth-screen.hidden{display:none;}
+.auth-logo{display:flex;align-items:center;gap:11px;}
+.auth-logo img{height:28px;}
+.auth-logo span{font-family:var(--f-display);font-weight:600;font-size:18px;color:#fff;letter-spacing:.01em;}
+.auth-logo span em{color:var(--ember-3);font-style:normal;}
+.auth-box{
+  background:var(--ink-2); border:1px solid var(--line-on-dark);
+  border-radius:18px; padding:36px 32px; width:100%; max-width:360px;
+  display:flex; flex-direction:column; gap:18px;
+}
+.auth-box h2{font-family:var(--f-display);font-size:22px;font-weight:600;color:#fff;}
+.auth-box p{font-family:var(--f-mono);font-size:12px;color:var(--steel);letter-spacing:.04em;}
+.auth-box input{
+  width:100%; padding:13px 16px; border-radius:10px;
+  background:var(--ink-3); border:1px solid var(--line-on-dark);
+  color:#fff; font-family:var(--f-mono); font-size:14px; letter-spacing:.06em;
+  outline:none; transition:border-color .2s;
+}
+.auth-box input:focus{border-color:rgba(194,85,27,0.5);}
+.auth-error{font-family:var(--f-mono);font-size:12px;color:var(--ember-3);display:none;}
+.auth-error.show{display:block;}
+
+/* ---- Top nav ---- */
+.admin-nav{
+  background:var(--ink); border-bottom:1px solid var(--line-on-dark);
+  padding:16px 0; position:sticky; top:0; z-index:50;
+}
+.admin-nav .wrap{
+  max-width:900px; margin:0 auto; padding:0 32px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-brand img{height:24px;}
+.nav-brand span{font-family:var(--f-display);font-size:16px;font-weight:600;color:#fff;}
+.nav-brand span em{color:var(--ember-3);font-style:normal;}
+.nav-badge{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ember-2);
+  border:1px solid rgba(194,85,27,0.35);border-radius:999px;padding:4px 10px;
+}
+.nav-links{display:flex;gap:16px;align-items:center;}
+.nav-links a{
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--steel);
+  border:1px solid var(--line-on-dark);border-radius:999px;padding:7px 14px;
+  transition:color .2s,border-color .2s;
+}
+.nav-links a:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+button.logout{
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--steel);
+  background:none;border:1px solid var(--line-on-dark);border-radius:999px;
+  padding:7px 14px;cursor:pointer;transition:color .2s,border-color .2s;
+}
+button.logout:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+
+/* ---- Main layout ---- */
+#admin-screen{display:none;}
+#admin-screen.show{display:block;}
+.main{max-width:900px;margin:0 auto;padding:48px 32px 80px;}
+
+.page-head{margin-bottom:48px;}
+.eyebrow{
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ember);
+  display:inline-flex;align-items:center;gap:9px;margin-bottom:10px;
+}
+.eyebrow::before{content:'';width:16px;height:1px;background:var(--ember);}
+.page-head h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--ink);margin-top:8px;}
+.page-head p{color:var(--slate-soft);font-size:15px;margin-top:8px;}
+
+/* ---- Cards ---- */
+.person-card{
+  background:#fff;border:1px solid var(--line-on-paper);
+  border-radius:20px;overflow:hidden;margin-bottom:32px;
+}
+.person-card-head{
+  padding:28px 32px;border-bottom:1px solid var(--line-on-paper);
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  background:var(--paper-2);
+}
+.person-head-left{display:flex;align-items:center;gap:16px;}
+.person-photo{
+  width:60px;height:60px;border-radius:12px;overflow:hidden;
+  border:2px solid var(--paper-3);flex:none;
+}
+.person-photo img{width:100%;height:100%;object-fit:cover;filter:grayscale(20%);}
+.person-head-text .role{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ember);margin-bottom:3px;
+}
+.person-head-text h2{font-family:var(--f-display);font-size:22px;font-weight:600;}
+.preview-link{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--slate-soft);
+  border:1px solid var(--line-on-paper-strong);border-radius:999px;padding:7px 14px;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:color .2s,border-color .2s;white-space:nowrap;
+}
+.preview-link:hover{color:var(--ember);border-color:var(--ember);}
+
+/* ---- Form ---- */
+.form-body{padding:32px;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.field{display:flex;flex-direction:column;gap:7px;}
+.field.full{grid-column:1/-1;}
+label{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--slate-soft);
+}
+input[type=text],input[type=email],input[type=tel],input[type=url]{
+  padding:11px 14px;border-radius:9px;
+  border:1px solid var(--line-on-paper-strong);
+  background:#fff;color:#1B2128;font-family:var(--f-body);font-size:14.5px;
+  outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+}
+input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,input[type=url]:focus{
+  border-color:var(--ember);box-shadow:0 0 0 3px rgba(194,85,27,0.12);
+}
+.field-hint{font-size:12px;color:var(--slate-soft);margin-top:2px;}
+
+.form-divider{
+  height:1px;background:var(--line-on-paper);
+  margin:28px 0;grid-column:1/-1;
+}
+
+/* Photo section */
+.photo-row{
+  display:flex;align-items:center;gap:20px;
+  grid-column:1/-1;
+}
+.photo-preview{
+  width:72px;height:72px;border-radius:12px;overflow:hidden;
+  border:1px solid var(--line-on-paper-strong);flex:none;
+}
+.photo-preview img{width:100%;height:100%;object-fit:cover;}
+.photo-controls{display:flex;flex-direction:column;gap:8px;}
+.photo-controls p{font-size:13px;color:var(--slate-soft);}
+.btn-upload{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:#1B2128;border:1px solid var(--line-on-paper-strong);border-radius:999px;
+  padding:7px 14px;cursor:pointer;transition:border-color .2s,color .2s;
+  background:#fff;
+}
+.btn-upload:hover{border-color:var(--ember);color:var(--ember);}
+input[type=file]{display:none;}
+
+/* Actions */
+.form-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 32px;border-top:1px solid var(--line-on-paper);
+  background:var(--paper);
+}
+.btn-save{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--f-mono);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;
+  padding:12px 24px;border-radius:999px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--ember-2),var(--ember-deep));color:#fff;
+  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 8px 20px -8px rgba(194,85,27,0.6);
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease);
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,0.2) inset,0 12px 26px -8px rgba(194,85,27,0.75);}
+.btn-reset{
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--slate-soft);background:none;border:none;cursor:pointer;padding:0;
+  transition:color .2s;
+}
+.btn-reset:hover{color:var(--ember);}
+.save-msg{
+  font-family:var(--f-mono);font-size:12px;color:var(--ember-2);
+  letter-spacing:.04em;opacity:0;transition:opacity .3s;
+}
+.save-msg.show{opacity:1;}
+
+@media(max-width:640px){
+  .field-grid{grid-template-columns:1fr;}
+  .person-card-head{flex-direction:column;align-items:flex-start;}
+  .admin-nav .wrap{gap:12px;}
+  .main{padding:32px 20px 60px;}
+}
+
+/* ---- Change password panel ---- */
+.cp-panel{
+  max-height:0; overflow:hidden;
+  transition:max-height .35s var(--ease);
+  margin-bottom:0;
+}
+.cp-panel.open{max-height:420px; margin-bottom:32px;}
+.cp-panel-inner{
+  background:#fff;border:1px solid var(--line-on-paper);border-radius:20px;
+  padding:28px 32px;
+}
+.cp-panel-inner h3{font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--ink,#1B2128);}
+.cp-hint{font-size:13px;color:var(--slate-soft);margin-top:6px;margin-bottom:20px;}
+.cp-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.cp-fields input{
+  padding:11px 14px;border-radius:9px;
+  border:1px solid var(--line-on-paper-strong);
+  background:#fff;color:#1B2128;font-family:var(--f-mono);font-size:13.5px;letter-spacing:.03em;
+  outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+}
+.cp-fields input:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(194,85,27,0.12);}
+.cp-actions{
+  display:flex;align-items:center;justify-content:flex-end;gap:16px;
+  margin-top:22px;
+}
+.cp-msg{
+  font-family:var(--f-mono);font-size:12px;color:var(--ember);
+  letter-spacing:.03em;opacity:0;transition:opacity .2s;margin-right:auto;
+}
+.cp-msg.show{opacity:1;}
+.cp-msg.ok{color:#3C8A5E;}
+
+@media(max-width:640px){
+  .cp-fields{grid-template-columns:1fr;}
+  .cp-actions{flex-wrap:wrap;}
+  .cp-msg{margin-right:0;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="auth-screen">
+  <div class="auth-logo">
+    <img src="img/mark_only.png" alt="">
+    <span>VENTURE <em>FOUNDRY</em></span>
+  </div>
+  <div class="auth-box">
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to manage vCard details.</p>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password">
+    <div class="auth-error" id="auth-error">Incorrect password — try again.</div>
+    <button class="btn-save" id="auth-submit" onclick="checkAuth()" style="width:100%;justify-content:center;">
+      Continue
+      <svg width="13" height="11" viewBox="0 0 13 11" fill="none"><path d="M1 5.5H12M12 5.5L7.5 1M12 5.5L7.5 10" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Admin Screen -->
+<div id="admin-screen">
+
+  <nav class="admin-nav">
+    <div class="wrap">
+      <div class="nav-brand">
+        <img src="img/mark_only.png" alt="">
+        <span>VENTURE <em>FOUNDRY</em></span>
+        <span class="nav-badge">vCard Admin</span>
+      </div>
+      <div class="nav-links">
+        <a href="james.html" target="_blank">James ↗</a>
+        <a href="kevin.html" target="_blank">Kevin ↗</a>
+        <button class="logout" onclick="toggleChangePassword()">Change password</button>
+        <button class="logout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="page-head">
+      <div class="eyebrow">Contact Management</div>
+      <h1>vCard Manager</h1>
+      <p>Edit contact details for each co-founder. Changes save immediately and are reflected on the live card pages.</p>
+    </div>
+
+    <div class="cp-panel" id="cp-panel">
+      <div class="cp-panel-inner">
+        <h3>Change admin password</h3>
+        <p class="cp-hint">This changes the password for everyone with admin access. You'll need it next time you sign in here.</p>
+        <div class="cp-fields">
+          <div class="field">
+            <label for="cp-current">Current password</label>
+            <input type="password" id="cp-current" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="cp-new">New password</label>
+            <input type="password" id="cp-new" autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label for="cp-confirm">Confirm new password</label>
+            <input type="password" id="cp-confirm" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="cp-actions">
+          <span class="cp-msg" id="cp-msg"></span>
+          <button class="btn-reset" onclick="toggleChangePassword()">Cancel</button>
+          <button class="btn-save" id="cp-submit" onclick="submitPasswordChange()">
+            Update password
+            <svg width="13" height="11" viewBox="0 0 13 11" fill="none"><path d="M1 5.5H12M12 5.5L7.5 1M12 5.5L7.5 10" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- James Card -->
+    <div class="person-card">
+      <div class="person-card-head">
+        <div class="person-head-left">
+          <div class="person-photo"><img id="james-head-photo" src="img/James Picture.png" alt="James"></div>
+          <div class="person-head-text">
+            <div class="role">Co-Founder</div>
+            <h2>James Spearman</h2>
+          </div>
+        </div>
+        <a href="james.html" target="_blank" class="preview-link">
+          Preview card
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 11L11 1M11 1H5M11 1V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+
+      <form class="form-body" id="james-form" onsubmit="return false;">
+        <div class="field-grid">
+
+          <div class="field photo-row full">
+            <div class="photo-preview"><img id="james-photo-preview" src="img//James Picture.png" alt=""></div>
+            <div class="photo-controls">
+              <p>Contact photo (shown on card &amp; embedded in VCF)</p>
+              <label class="btn-upload" for="james-photo-file">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M8 1L4 5M8 1l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 12v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Upload photo
+              </label>
+              <input type="file" id="james-photo-file" accept="image/*" onchange="handlePhoto('james', this)">
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="field">
+            <label for="james-first">First name</label>
+            <input type="text" id="james-first" value="James">
+          </div>
+          <div class="field">
+            <label for="james-last">Last name</label>
+            <input type="text" id="james-last" value="Spearman">
+          </div>
+          <div class="field">
+            <label for="james-role">Title / Role</label>
+            <input type="text" id="james-role" value="Co-Founder">
+          </div>
+          <div class="field">
+            <label for="james-org">Organisation</label>
+            <input type="text" id="james-org" value="Venture Foundry">
+          </div>
+          <div class="field full">
+            <label for="james-tagline">Tagline</label>
+            <input type="text" id="james-tagline" value="Microsoft Azure Expert · Cloud Migration &amp; Security Strategist">
+            <span class="field-hint">Shown on card and saved in VCF Note field.</span>
+          </div>
+          <div class="field">
+            <label for="james-email">Work email</label>
+            <input type="email" id="james-email" value="james@venturefoundry.ae">
+          </div>
+          <div class="field">
+            <label for="james-phone">Mobile number</label>
+            <input type="tel" id="james-phone" placeholder="+971 50 000 0000">
+            <span class="field-hint">Leave blank to hide.</span>
+          </div>
+          <div class="field full">
+            <label for="james-linkedin">LinkedIn URL</label>
+            <input type="url" id="james-linkedin" value="https://www.linkedin.com/in/jamesspearman">
+          </div>
+          <div class="field full">
+            <label for="james-address">Address</label>
+            <input type="text" id="james-address" value="DIFC Innovation Hub, Gate Avenue, Dubai, UAE">
+          </div>
+        </div>
+      </form>
+
+      <div class="form-actions">
+        <button class="btn-reset" onclick="resetPerson('james')">Reset to defaults</button>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <span class="save-msg" id="james-save-msg">Saved.</span>
+          <button class="btn-save" onclick="savePerson('james')">
+            Save James
+            <svg width="13" height="11" viewBox="0 0 13 11" fill="none"><path d="M1 5.5H12M12 5.5L7.5 1M12 5.5L7.5 10" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kevin Card -->
+    <div class="person-card">
+      <div class="person-card-head">
+        <div class="person-head-left">
+          <div class="person-photo"><img id="kevin-head-photo" src="img/Kevin Picture.jpeg" alt="Kevin"></div>
+          <div class="person-head-text">
+            <div class="role">Co-Founder</div>
+            <h2>Kevin Ashby</h2>
+          </div>
+        </div>
+        <a href="kevin.html" target="_blank" class="preview-link">
+          Preview card
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 11L11 1M11 1H5M11 1V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+
+      <form class="form-body" id="kevin-form" onsubmit="return false;">
+        <div class="field-grid">
+
+          <div class="field photo-row full">
+            <div class="photo-preview"><img id="kevin-photo-preview" src="img/Kevin Picture.jpeg" alt=""></div>
+            <div class="photo-controls">
+              <p>Contact photo (shown on card &amp; embedded in VCF)</p>
+              <label class="btn-upload" for="kevin-photo-file">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M8 1L4 5M8 1l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 12v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Upload photo
+              </label>
+              <input type="file" id="kevin-photo-file" accept="image/*" onchange="handlePhoto('kevin', this)">
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="field">
+            <label for="kevin-first">First name</label>
+            <input type="text" id="kevin-first" value="Kevin">
+          </div>
+          <div class="field">
+            <label for="kevin-last">Last name</label>
+            <input type="text" id="kevin-last" value="Ashby">
+          </div>
+          <div class="field">
+            <label for="kevin-role">Title / Role</label>
+            <input type="text" id="kevin-role" value="Co-Founder">
+          </div>
+          <div class="field">
+            <label for="kevin-org">Organisation</label>
+            <input type="text" id="kevin-org" value="Venture Foundry">
+          </div>
+          <div class="field full">
+            <label for="kevin-tagline">Tagline</label>
+            <input type="text" id="kevin-tagline" value="Global Partner &amp; Alliances Leader · 30+ Years in Channel &amp; Cloud">
+          </div>
+          <div class="field">
+            <label for="kevin-email">Work email</label>
+            <input type="email" id="kevin-email" value="kevin@venturefoundry.ae">
+          </div>
+          <div class="field">
+            <label for="kevin-phone">Mobile number</label>
+            <input type="tel" id="kevin-phone" placeholder="+971 50 000 0000">
+            <span class="field-hint">Leave blank to hide.</span>
+          </div>
+          <div class="field full">
+            <label for="kevin-linkedin">LinkedIn URL</label>
+            <input type="url" id="kevin-linkedin" value="https://www.linkedin.com/in/kevinpaulashby">
+          </div>
+          <div class="field full">
+            <label for="kevin-address">Address</label>
+            <input type="text" id="kevin-address" value="DIFC Innovation Hub, Gate Avenue, Dubai, UAE">
+          </div>
+        </div>
+      </form>
+
+      <div class="form-actions">
+        <button class="btn-reset" onclick="resetPerson('kevin')">Reset to defaults</button>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <span class="save-msg" id="kevin-save-msg">Saved.</span>
+          <button class="btn-save" onclick="savePerson('kevin')">
+            Save Kevin
+            <svg width="13" height="11" viewBox="0 0 13 11" fill="none"><path d="M1 5.5H12M12 5.5L7.5 1M12 5.5L7.5 10" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /admin-screen -->
+
+<script>
+/* ---- Auth ---- */
+// The admin password is never stored here. It lives hashed in Netlify
+// Blobs and is checked server-side by the auth.js function. This page
+// only ever holds a short-lived session token, never the password itself.
+
+let sessionToken = null;
+
+async function checkAuth() {
+  const pw = document.getElementById('pw-input').value;
+  const btn = document.getElementById('auth-submit');
+  const errEl = document.getElementById('auth-error');
+  errEl.classList.remove('show');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const out = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = out.error || 'Incorrect password — try again.';
+      errEl.classList.add('show');
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+      return;
+    }
+
+    sessionToken = out.token;
+    sessionStorage.setItem('vf_admin_token', sessionToken);
+    showAdmin();
+  } catch (err) {
+    errEl.textContent = 'Could not reach the server. Check your connection and try again.';
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAuth();
+});
+
+function logout() {
+  sessionToken = null;
+  sessionStorage.removeItem('vf_admin_token');
+  document.getElementById('admin-screen').classList.remove('show');
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
+function showAdmin() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('admin-screen').classList.add('show');
+  loadAll();
+}
+
+// A stored token means "was logged in this session" — the token is
+// still verified server-side on every save, so an expired/invalid one
+// just bounces the user back to the login screen on first write attempt.
+const existingToken = sessionStorage.getItem('vf_admin_token');
+if (existingToken) {
+  sessionToken = existingToken;
+  showAdmin();
+}
+
+/** Bounce back to the login screen with a message, e.g. on session expiry. */
+function forceReauth(message) {
+  sessionToken = null;
+  sessionStorage.removeItem('vf_admin_token');
+  document.getElementById('admin-screen').classList.remove('show');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = message || 'Session expired — please sign in again.';
+  errEl.classList.add('show');
+}
+
+/* ---- Defaults ---- */
+const DEFAULTS = {
+  james: {
+    first:'James', last:'Spearman',
+    role:'Co-Founder', org:'Venture Foundry',
+    tagline:'Microsoft Azure Expert · Cloud Migration & Security Strategist',
+    email:'james@venturefoundry.ae', phone:'',
+    linkedin:'https://www.linkedin.com/in/jamesspearman',
+    address:'DIFC Innovation Hub, Gate Avenue, Dubai, UAE',
+    photo:'img/james_square.jpg'
+  },
+  kevin: {
+    first:'Kevin', last:'Ashby',
+    role:'Co-Founder', org:'Venture Foundry',
+    tagline:'Global Partner & Alliances Leader · 30+ Years in Channel & Cloud',
+    email:'kevin@venturefoundry.ae', phone:'',
+    linkedin:'https://www.linkedin.com/in/kevinpaulashby',
+    address:'DIFC Innovation Hub, Gate Avenue, Dubai, UAE',
+    photo:'img/kevin_square.jpg'
+  }
+};
+
+/* ---- Load / Save ---- */
+// Keep a local cache of each person's last-known-good record, mainly so
+// getFormData() can preserve the photo when only text fields are edited.
+const cache = { james: null, kevin: null };
+
+async function loadPerson(who) {
+  try {
+    const res = await fetch('/.netlify/functions/get-contact?who=' + who);
+    if (!res.ok) throw new Error('fetch failed');
+    const d = await res.json();
+    cache[who] = Object.assign({}, DEFAULTS[who], d);
+    return cache[who];
+  } catch (e) {
+    cache[who] = DEFAULTS[who];
+    return DEFAULTS[who];
+  }
+}
+
+function populateForm(who, d) {
+  ['first','last','role','org','tagline','email','phone','linkedin','address'].forEach(f => {
+    const el = document.getElementById(who + '-' + f);
+    if (el) el.value = d[f] || '';
+  });
+  if (d.photo) {
+    document.getElementById(who + '-photo-preview').src = d.photo;
+    document.getElementById(who + '-head-photo').src = d.photo;
+  }
+}
+
+async function loadAll() {
+  populateForm('james', await loadPerson('james'));
+  populateForm('kevin', await loadPerson('kevin'));
+}
+
+function getFormData(who) {
+  const g = id => document.getElementById(who + '-' + id).value.trim();
+  const d = {
+    first: g('first'), last: g('last'),
+    name: g('first') + ' ' + g('last'),
+    role: g('role'), org: g('org'), tagline: g('tagline'),
+    email: g('email'), phone: g('phone'),
+    linkedin: g('linkedin'), address: g('address')
+  };
+  // preserve whatever photo is already known, so saving the text fields
+  // never accidentally wipes a previously uploaded photo
+  if (cache[who] && cache[who].photo) d.photo = cache[who].photo;
+  return d;
+}
+
+/**
+ * POST a partial or full record to save-contact.js. Always merges
+ * server-side, so this is safe to call for photo-only or text-only saves.
+ */
+async function persist(who, data) {
+  if (!sessionToken) { forceReauth(); throw new Error('not authenticated'); }
+
+  const res = await fetch('/.netlify/functions/save-contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: sessionToken, who, data })
+  });
+
+  if (res.status === 401) {
+    forceReauth('Session expired — please sign in again.');
+    throw new Error('session expired');
+  }
+  if (!res.ok) {
+    const out = await res.json().catch(() => ({}));
+    throw new Error(out.error || 'Save failed');
+  }
+
+  const out = await res.json();
+  cache[who] = out.data;
+  return out.data;
+}
+
+async function savePerson(who) {
+  const btn = document.querySelector('#' + who + '-form').closest('.person-card').querySelector('.btn-save');
+  const msg = document.getElementById(who + '-save-msg');
+  const originalLabel = btn.innerHTML;
+  btn.disabled = true;
+
+  try {
+    const d = getFormData(who);
+    await persist(who, d);
+    msg.textContent = 'Saved.';
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2500);
+  } catch (err) {
+    if (err.message !== 'session expired' && err.message !== 'not authenticated') {
+      msg.textContent = 'Save failed — ' + err.message;
+      msg.style.color = 'var(--ember)';
+      msg.classList.add('show');
+      setTimeout(() => { msg.classList.remove('show'); msg.style.color = ''; msg.textContent = 'Saved.'; }, 4000);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
+  }
+}
+
+async function resetPerson(who) {
+  if (!confirm('Reset ' + (who === 'james' ? 'James' : 'Kevin') + ' to default values?')) return;
+  try {
+    await persist(who, DEFAULTS[who]);
+    populateForm(who, DEFAULTS[who]);
+  } catch (err) {
+    if (err.message !== 'session expired' && err.message !== 'not authenticated') {
+      alert('Reset failed: ' + err.message);
+    }
+  }
+}
+
+/* ---- Photo upload ---- */
+function handlePhoto(who, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    document.getElementById(who + '-photo-preview').src = dataUrl;
+    document.getElementById(who + '-head-photo').src = dataUrl;
+
+    const msg = document.getElementById(who + '-save-msg');
+    try {
+      await persist(who, { photo: dataUrl });
+      msg.textContent = 'Photo saved.';
+      msg.classList.add('show');
+      setTimeout(() => { msg.classList.remove('show'); msg.textContent = 'Saved.'; }, 2500);
+    } catch (err) {
+      if (err.message !== 'session expired' && err.message !== 'not authenticated') {
+        msg.textContent = 'Photo save failed — ' + err.message;
+        msg.style.color = 'var(--ember)';
+        msg.classList.add('show');
+        setTimeout(() => { msg.classList.remove('show'); msg.style.color = ''; msg.textContent = 'Saved.'; }, 4000);
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---- Change password ---- */
+async function submitPasswordChange() {
+  const current = document.getElementById('cp-current').value;
+  const next = document.getElementById('cp-new').value;
+  const confirmPw = document.getElementById('cp-confirm').value;
+  const msgEl = document.getElementById('cp-msg');
+
+  msgEl.classList.remove('show', 'ok');
+  if (!current || !next || !confirmPw) {
+    msgEl.textContent = 'Fill in all three fields.';
+    msgEl.classList.add('show');
+    return;
+  }
+  if (next.length < 8) {
+    msgEl.textContent = 'New password must be at least 8 characters.';
+    msgEl.classList.add('show');
+    return;
+  }
+  if (next !== confirmPw) {
+    msgEl.textContent = 'New password and confirmation don\u2019t match.';
+    msgEl.classList.add('show');
+    return;
+  }
+  if (!sessionToken) { forceReauth(); return; }
+
+  const btn = document.getElementById('cp-submit');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/.netlify/functions/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionToken, currentPassword: current, newPassword: next })
+    });
+    const out = await res.json();
+
+    if (res.status === 401 && out.error && out.error.toLowerCase().includes('session')) {
+      forceReauth();
+      return;
+    }
+    if (!res.ok) {
+      msgEl.textContent = out.error || 'Could not change password.';
+      msgEl.classList.add('show');
+      return;
+    }
+
+    msgEl.textContent = 'Password updated.';
+    msgEl.classList.add('show', 'ok');
+    document.getElementById('cp-current').value = '';
+    document.getElementById('cp-new').value = '';
+    document.getElementById('cp-confirm').value = '';
+    setTimeout(() => { document.getElementById('cp-panel').classList.remove('open'); msgEl.classList.remove('show','ok'); }, 1800);
+  } catch (err) {
+    msgEl.textContent = 'Network error — try again.';
+    msgEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function toggleChangePassword() {
+  document.getElementById('cp-panel').classList.toggle('open');
+}
+</script>
+</body>
+</html>

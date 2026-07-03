@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venture Foundry — Coming Soon</title>
+<meta name="description" content="Venture Foundry — the ecosystem engine that activates and scales ISVs across global hyperscaler networks.">
+<link rel="icon" type="image/png" href="img/mark_only.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ── Reset ─────────────────────────────────────────────── */
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+
+/* ── Tokens ─────────────────────────────────────────────── */
+:root{
+  --ink:     #14181D;
+  --ink-2:   #1B2128;
+  --slate:   #4A5460;
+  --steel:   #97A1AB;
+  --paper:   #F7F4EE;
+  --ember:   #C2551B;
+  --ember-2: #E2752E;
+  --ember-3: #F4954A;
+  --line:    rgba(247,244,238,0.10);
+  --f-display: 'Fraunces','Palatino Linotype',serif;
+  --f-body:    'Inter',-apple-system,sans-serif;
+  --f-mono:    'IBM Plex Mono',monospace;
+  --ease:    cubic-bezier(.22,.68,0,1);
+}
+
+body{
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;        /* single screen */
+  display:flex; flex-direction:column;
+  min-height:100vh;
+}
+
+::selection{ background: var(--ember); color:#fff; }
+
+/* ── Intro Splash ────────────────────────────────────────── */
+.splash{
+  position: fixed; inset:0; z-index: 999;
+  background: #fff;
+  display: flex; align-items:center; justify-content:center;
+  cursor: pointer;
+  animation: splashOut .8s ease forwards;
+  animation-delay: 3.2s;
+}
+.splash-logo{
+  width: clamp(200px, 36vw, 480px); height:auto;
+  opacity:0; transform:scale(.88);
+  animation:
+    logoIn .6s var(--ease) forwards,
+    breathe 2.2s ease-in-out .6s 1;
+}
+.splash-skip{
+  position:absolute; bottom:44px; left:50%; transform:translateX(-50%);
+  font-family: var(--f-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color: #97a1ab; display:flex; align-items:center; gap:7px;
+  opacity:0; animation: fadeIn .5s ease forwards; animation-delay:1.2s;
+}
+@keyframes logoIn  { to{ opacity:1; transform:scale(1); } }
+@keyframes breathe { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.032); } }
+@keyframes splashOut{ to{ opacity:0; visibility:hidden; } }
+@keyframes fadeIn  { to{ opacity:1; } }
+.splash.gone{ animation: splashOut .4s ease forwards !important; animation-delay:0s !important; }
+
+/* ── Background glow ─────────────────────────────────────── */
+.glow{
+  position: fixed; z-index:0; pointer-events:none;
+  border-radius:50%;
+}
+.glow-a{
+  width: 70vw; height:70vw; max-width:900px; max-height:900px;
+  top:-20%; right:-12%;
+  background: radial-gradient(circle, rgba(194,85,27,.18), transparent 65%);
+}
+.glow-b{
+  width: 40vw; height:40vw; max-width:500px; max-height:500px;
+  bottom:-15%; left:-8%;
+  background: radial-gradient(circle, rgba(74,84,96,.22), transparent 65%);
+}
+.grid-bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,.6), transparent 80%);
+}
+
+/* ── Main content ────────────────────────────────────────── */
+main{
+  position:relative; z-index:1;
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 60px 32px;
+  text-align:center;
+}
+
+/* MODIFIED: Removed clamp constraints to allow manual pixel resizing */
+.logo-wrap img {
+  height: var(--logo-height, auto);
+  width: auto;
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.divider{
+  width:40px; height:1px; margin:40px auto;
+  background: linear-gradient(90deg, transparent, var(--ember-2), var(--ember-3), transparent);
+}
+
+.eyebrow{
+  font-family: var(--f-mono); font-size:16px; letter-spacing:.18em;
+  text-transform:uppercase; color: var(--ember-2);
+  display:inline-flex; align-items:center; gap:10px; margin-bottom:22px;
+}
+.eyebrow::before,
+.eyebrow::after{
+  content:''; display:inline-block; width:18px; height:1px; background:var(--ember-2);
+}
+
+h1{
+  font-family: var(--f-display);
+  font-weight:600;
+  font-size: clamp(28px, 4.2vw, 56px);
+  line-height:1.1;
+  letter-spacing:-.01em;
+  max-width: 16ch;
+  margin: 0 auto;
+}
+h1 em{
+  font-style:italic; font-weight:500;
+  background: linear-gradient(100deg, var(--ember-3), var(--ember));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+
+.desc{
+  margin: 28px auto 0;
+  max-width: 52ch;
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.7;
+  color: var(--steel);
+}
+
+.cta{
+  margin-top: 44px;
+  display:inline-flex; align-items:center; gap:10px;
+  font-family: var(--f-mono); font-size:12px; letter-spacing:.05em;
+  text-transform:uppercase; text-decoration:none;
+  padding: 14px 28px;
+  border-radius:999px;
+  border: 1px solid rgba(226,117,46,.45);
+  color: var(--ember-3);
+  transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease);
+}
+.cta:hover{
+  background: rgba(226,117,46,.12);
+  border-color: var(--ember-3);
+  color:#fff;
+}
+.cta svg{ transition: transform .3s var(--ease); }
+.cta:hover svg{ transform: translateX(3px); }
+
+/* ── Footer strip ────────────────────────────────────────── */
+footer{
+  position:relative; z-index:1;
+  padding: 22px 32px;
+  border-top: 1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px;
+  font-family: var(--f-mono); font-size:11px; letter-spacing:.05em;
+  color: var(--slate);
+}
+footer .badge{
+  display:inline-flex; align-items:center; gap:8px;
+}
+footer .dot{
+  width:5px; height:5px; border-radius:50%;
+  background: var(--ember-2);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{ opacity:.5; transform:scale(1); }
+  50%{ opacity:1; transform:scale(1.3); }
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width:600px){
+  body{ overflow:auto; }
+  main{ padding:80px 24px 40px; }
+  footer{ justify-content:center; text-align:center; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="splash" id="splash">
+  <img class="splash-logo" src="img/splash_logo_full.png" alt="Venture Foundry">
+  <div class="splash-skip">
+    <span>Skip Intro</span>
+    <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5H10M10 4.5L6.5 1M10 4.5L6.5 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
+<div class="grid-bg"></div>
+
+<main>
+  <div class="logo-wrap">
+    <img src="img/VF logo.png" alt="Venture Foundry" style="--logo-height: 300px;">
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="eyebrow">Launching Soon</div>
+
+  <h1>The engine that turns startups & ISV's into <em>hyperscaler-ready</em> enterprises.</h1>
+
+  <p class="desc">Venture Foundry is a specialist execution layer that activates startups and independent software vendors across global hyperscaler ecosystems — demystifying hyperscaler funding programs, marketplace presence and co-sell pipelines that accelerate commercial growth.</p>
+
+  <a href="mailto:hello@venturefoundry.net" class="cta">
+    Get in touch
+    <svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5.5H13M13 5.5L8.5 1M13 5.5L8.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+</main>
+
+<footer>
+  <span>© <span id="yr"></span> Venture Foundry. All rights reserved.</span>
+  <div class="badge">
+    <div class="dot"></div>
+    <span>Dubai, UAE &nbsp;·&nbsp; hello@venturefoundry.net</span>
+  </div>
+</footer>
+
+<script>
+  // Year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Splash skip — click anywhere or Escape
+  const splash = document.getElementById('splash');
+  const skip = () => splash.classList.add('gone');
+  splash.addEventListener('click', skip);
+  window.addEventListener('keydown', e => { if(e.key==='Escape') skip(); }, { once:true });
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "venture-foundry-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Venture Foundry marketing site and vCard contact system",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.0"
+  }
+}
