@@ -1,0 +1,22 @@
+/*
+  # Enforce HTTPS strictly across all subdomains
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Prevent MIME-sniffing
+  X-Content-Type-Options: nosniff
+
+  # Prevent clickjacking
+  X-Frame-Options: DENY
+
+  # Control referrer leaks
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Restrict browser APIs not needed by a standard marketing site
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # Cross-origin isolation policies
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+  # Baseline Content Security Policy (allows Google Fonts and local assets)
+  Content-Security-Policy: default-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none';
